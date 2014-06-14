@@ -16,7 +16,7 @@ EXECUTABLE=$(BIN)/ninjatty
 all: $(SOURCES) $(EXECUTABLE)
 	
 $(EXECUTABLE): $(OBJECTS) | $(BIN)
-	$(CC) $(LDFLAGS) $(OBJECTS) -o $@
+	$(CC) $(OBJECTS) -o $@ $(LDFLAGS)
 
 $(OBJECTS): $(OBJ)/%.o: %.cpp | $(OBJ)
 	$(CC) $(CFLAGS) $< -o $@
