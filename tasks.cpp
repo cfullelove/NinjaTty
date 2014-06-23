@@ -1,9 +1,11 @@
 #include <iostream>
 #include <fstream>
 #include <Poco/NumberFormatter.h>
-#include "mqtt_client.h"
+#include <Poco/Delegate.h>
+#include "MQTTClient.h"
 #include "tasks.h"
 
+using Poco::Delegate;
 
 void PubTask::runTask()
 {
@@ -23,8 +25,9 @@ void PubTask::runTask()
 	}
 
 	std::string line;
-	
-	mqtt_client& mosq = app.getClient();
+	std::string *topicRead = app.getTopicRead();
+
+	MQTTClient& mosq = app.getClient();
 
 	while ( ! isCancelled() )
 	{
@@ -33,22 +36,27 @@ void PubTask::runTask()
 		if ( line.compare( 0, 37, "{\"DEVICE\":[{\"G\":\"0\",\"V\":0,\"D\":2,\"DA\":" ) == 0)
 			continue;
 
-		mosq.publish( line );
+		if ( mosq.connected() )
+		{
+			mosq.publish( *topicRead, line );
+		}
 	}
 }
 
 void SubTask::runTask()
 {
-	mqtt_client& mosq = app.getClient();		
+	MQTTClient& mosq = app.getClient();		
 	
-	MessageCallback<SubTask> onMessage( this, &SubTask::handleMessage );
-	mosq.setMessageHandler( onMessage );
+
+	mosq.clientMessage += Delegate<SubTask, MQTTMessageEventArgs>( this, &SubTask::handleMessage );
+	mosq.clientConnect += Delegate<SubTask, MQTTConnectEventArgs>( this, &SubTask::handleConnect );
+	mosq.clientSubscribe += Delegate<SubTask, MQTTSubscribeEventArgs>( this, &SubTask::handleSubscribe );
 
 	logger.information( "Starting MQTT Client");
 
 	if ( *(app.getTtyFilename()) == "-" )
 	{
-		logger.information( "Writing to stdin" );
+		logger.information( "Writing to stdout" );
 
 		ttyWrite = &std::cout;
 	}
@@ -71,6 +79,7 @@ void SubTask::runTask()
 			rv = mosq.loop( -1 );
 			if ( rv != MOSQ_ERR_SUCCESS )
 			{
+				logger.information( "Reconnecting... loop() returned: " + Poco::NumberFormatter::formatHex( rv ) );
 				mosq.reconnect();
 			}
 		}
@@ -80,7 +89,22 @@ void SubTask::runTask()
 
 }
 
-void SubTask::handleMessage( char* message )
+
+void SubTask::handleMessage( const void* pSender, MQTTMessageEventArgs& eventArgs )
 {
-	(*ttyWrite) << message << std::endl;
+	char *payload;
+    payload = (char *)(eventArgs.message)->payload;
+	(*ttyWrite) << payload << std::endl;
+}
+
+void SubTask::handleConnect( const void* pSender, MQTTConnectEventArgs& eventArgs )
+{
+	std::string *topicWrite = app.getTopicWrite();
+	logger.information( "Subscribing to: " + *topicWrite );
+	app.getClient().subscribe( NULL, topicWrite->c_str() );
+}
+
+void SubTask::handleSubscribe( const void* pSender, MQTTSubscribeEventArgs& eventArgs )
+{
+	logger.information( "Subscription Successful" );
 }

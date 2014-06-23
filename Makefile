@@ -4,7 +4,7 @@ CFLAGS=-c -Wall
 LDFLAGS= -lmosquittopp -lPocoUtil -lPocoFoundation
 OBJ=obj
 BIN=bin
-SOURCES=main.cpp NinjaTtyDaemon.cpp mqtt_client.cpp tasks.cpp
+SOURCES=main.cpp NinjaTtyDaemon.cpp MQTTClient.cpp tasks.cpp
 OBJECTS=$(addprefix $(OBJ)/,$(SOURCES:.cpp=.o))
 
 EXECUTABLE=$(BIN)/ninjatty

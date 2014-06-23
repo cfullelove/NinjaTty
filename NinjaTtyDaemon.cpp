@@ -28,11 +28,11 @@ using Poco::DateTimeFormatter;
 
 void NinjaTtyDaemon::initialize(Application& self)
 {
-	loadConfiguration(); // load default configuration files, if present
+	loadConfiguration();  // load default configuration files, if present
 	ServerApplication::initialize(self);
 
-	AutoPtr<SyslogChannel> pSC= new SyslogChannel( commandName() );
-	logger().setChannel( pSC );
+	// AutoPtr<SyslogChannel> pSC= new SyslogChannel( commandName() );
+	// logger().setChannel( pSC );
 
 	logger().information("Starting up");
 }
@@ -65,14 +65,14 @@ void NinjaTtyDaemon::defineOptions(OptionSet& options)
 			.required( true )
 			.repeatable( false )
 			.argument( "host" )
-			.callback( OptionCallback<mqtt_client>(&mosq, &mqtt_client::set_host ) ) );
+			.callback( OptionCallback<MQTTClient>(&mosq, &MQTTClient::set_host ) ) );
 
 	options.addOption(
 		Option( "topic", "t", "base topic" )
 			.required( true )
 			.repeatable( false )
 			.argument( "topic" )
-			.callback( OptionCallback<mqtt_client>(&mosq, &mqtt_client::set_topic_base ) ) );
+			.callback( OptionCallback<NinjaTtyDaemon>(this, &NinjaTtyDaemon::set_topic_base ) ) );
 
 	options.addOption(
 		Option( "file", "f", "tty filename" )
@@ -80,12 +80,16 @@ void NinjaTtyDaemon::defineOptions(OptionSet& options)
 			.repeatable( false )
 			.argument( "file" )
 			.callback( OptionCallback<NinjaTtyDaemon>(this, &NinjaTtyDaemon::set_filename ) ) );
-
 }
 
 void NinjaTtyDaemon::set_filename(const std::string& name, const std::string& value)
 {
 	ttyFilename = new std::string( value );
+}
+
+void NinjaTtyDaemon::set_topic_base(const std::string& name, const std::string& value)
+{
+	topicBase = std::string( value );
 }
 
 void NinjaTtyDaemon::displayHelp()

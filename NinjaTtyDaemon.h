@@ -1,6 +1,6 @@
 #include <Poco/Util/ServerApplication.h>
 #include <Poco/Util/OptionSet.h>
-#include "mqtt_client.h"
+#include "MQTTClient.h"
 
 #ifndef NTPS_NinjaTtyDeamon_included
 #define NTPS_NinjaTtyDeamon_included
@@ -12,7 +12,10 @@ class NinjaTtyDaemon : public ServerApplication
 {
 
 public:
-	NinjaTtyDaemon(): _helpRequested( false ), mosq( "ninjatty" )
+	NinjaTtyDaemon():
+		_helpRequested( false ),
+		mosq( "ninjatty2" ),
+		topicBase( "" )
 	{
 	}
 
@@ -20,7 +23,7 @@ public:
 	{
 	}
 
-	mqtt_client& getClient()
+	MQTTClient& getClient()
 	{
 		return mosq;
 	}
@@ -28,6 +31,16 @@ public:
 	std::string* getTtyFilename()
 	{
 		return ttyFilename;
+	}
+
+	std::string* getTopicRead()
+	{
+		return new std::string( topicBase + "/read" );
+	}
+
+	std::string* getTopicWrite()
+	{
+		return new std::string( topicBase + "/write" );
 	}
 
 protected:
@@ -41,6 +54,7 @@ protected:
 	void defineOptions(OptionSet& options);
 
 	void set_filename(const std::string& name, const std::string& value);
+	void set_topic_base(const std::string& name, const std::string& value);
 
 	void displayHelp();
 
@@ -49,9 +63,10 @@ protected:
 private:
 	bool _helpRequested;
 
-	mqtt_client mosq;
+	MQTTClient mosq;
 
 	std::string *ttyFilename;
+	std::string topicBase;
 };
 
 #endif

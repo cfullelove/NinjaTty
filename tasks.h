@@ -32,7 +32,9 @@ public:
 
 	void runTask();
 
-	void handleMessage( char* message );
+	void handleMessage( const void* pSender, MQTTMessageEventArgs& eventArgs );
+	void handleConnect( const void* pSender, MQTTConnectEventArgs& eventArgs );
+	void handleSubscribe( const void* pSender, MQTTSubscribeEventArgs& eventArgs );
 
 private:
 	//std::fstream ttyWrite;
