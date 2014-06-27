@@ -28,13 +28,16 @@ using Poco::DateTimeFormatter;
 
 void NinjaTtyDaemon::initialize(Application& self)
 {
+
 	loadConfiguration();  // load default configuration files, if present
+
 	ServerApplication::initialize(self);
 
-	// AutoPtr<SyslogChannel> pSC= new SyslogChannel( commandName() );
-	// logger().setChannel( pSC );
+	AutoPtr<SyslogChannel> pSC= new SyslogChannel( commandName() );
+	logger().setChannel( pSC );
 
 	logger().information("Starting up");
+
 }
 
 void NinjaTtyDaemon::uninitialize()

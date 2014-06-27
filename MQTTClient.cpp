@@ -3,13 +3,10 @@
 
 MQTTClient::MQTTClient( const char* id ) : mosquittopp( id )
 {
-	lib_init();
-	log_init( MOSQ_LOG_ALL, MOSQ_LOG_STDOUT );
 };
 
 MQTTClient::~MQTTClient()
 {
-	lib_cleanup();
 };
 
 void MQTTClient::set_host(const std::string& name, const std::string& value)

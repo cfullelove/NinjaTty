@@ -1,5 +1,6 @@
 #include <Poco/Util/ServerApplication.h>
 #include <Poco/Util/OptionSet.h>
+#include <Poco/Process.h>
 #include "MQTTClient.h"
 
 #ifndef NTPS_NinjaTtyDeamon_included
@@ -14,8 +15,8 @@ class NinjaTtyDaemon : public ServerApplication
 public:
 	NinjaTtyDaemon():
 		_helpRequested( false ),
-		mosq( "ninjatty2" ),
-		topicBase( "" )
+		topicBase( "" ),
+		mosq( "ninja_" + Poco::Process::id() )
 	{
 	}
 

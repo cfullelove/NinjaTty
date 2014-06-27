@@ -4,7 +4,7 @@ CFLAGS=-c -Wall
 LDFLAGS= -lmosquittopp -lPocoUtil -lPocoFoundation
 OBJ=obj
 BIN=bin
-SOURCES=main.cpp NinjaTtyDaemon.cpp MQTTClient.cpp tasks.cpp
+SOURCES=NinjaTtyDaemon.cpp MQTTClient.cpp tasks.cpp
 OBJECTS=$(addprefix $(OBJ)/,$(SOURCES:.cpp=.o))
 
 EXECUTABLE=$(BIN)/ninjatty
@@ -13,12 +13,15 @@ EXECUTABLE=$(BIN)/ninjatty
 .PHONY: clean
 .PHONY: build
 
-all: $(SOURCES) $(EXECUTABLE)
-	
-$(EXECUTABLE): $(OBJECTS) | $(BIN)
-	$(CC) $(OBJECTS) -o $@ $(LDFLAGS)
+all: $(SOURCES) main $(EXECUTABLE)
 
-$(OBJECTS): $(OBJ)/%.o: %.cpp | $(OBJ)
+main: | $(OBJ)
+	$(CC) $(CFLAGS) main.cpp -o $(OBJ)/main.o
+	
+$(EXECUTABLE): $(OBJECTS) $(OBJ)/main.o | $(BIN)
+	$(CC) $(OBJECTS) $(OBJ)/main.o -o $@ $(LDFLAGS)
+
+$(OBJECTS): $(OBJ)/%.o: %.cpp | %.h $(OBJ)
 	$(CC) $(CFLAGS) $< -o $@
 
 clean:

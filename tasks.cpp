@@ -36,10 +36,7 @@ void PubTask::runTask()
 		if ( line.compare( 0, 37, "{\"DEVICE\":[{\"G\":\"0\",\"V\":0,\"D\":2,\"DA\":" ) == 0)
 			continue;
 
-		if ( mosq.connected() )
-		{
-			mosq.publish( *topicRead, line );
-		}
+		mosq.publish( *topicRead, line );
 	}
 }
 
@@ -76,11 +73,11 @@ void SubTask::runTask()
 		logger.information( "Connection successful" );
 		while ( ! isCancelled() )
 		{
-			rv = mosq.loop( -1 );
+			rv = mosq.loop( 1000 );
 			if ( rv != MOSQ_ERR_SUCCESS )
 			{
 				logger.information( "Reconnecting... loop() returned: " + Poco::NumberFormatter::formatHex( rv ) );
-				mosq.reconnect();
+				rv = mosq.reconnect();
 			}
 		}
 
