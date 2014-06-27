@@ -1,3 +1,4 @@
+#include <iostream>
 #include <Poco/Util/ServerApplication.h>
 #include <Poco/Util/OptionSet.h>
 #include <Poco/Process.h>
@@ -13,10 +14,10 @@ class NinjaTtyDaemon : public ServerApplication
 {
 
 public:
-	NinjaTtyDaemon():
+	NinjaTtyDaemon( const char* _clientId ):
 		_helpRequested( false ),
-		topicBase( "" ),
-		mosq( "ninja_" + Poco::Process::id() )
+		mosq( _clientId ),
+		topicBase( "" )
 	{
 	}
 
@@ -65,9 +66,10 @@ private:
 	bool _helpRequested;
 
 	MQTTClient mosq;
+	std::string topicBase;
 
 	std::string *ttyFilename;
-	std::string topicBase;
+
 };
 
 #endif

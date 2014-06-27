@@ -33,16 +33,10 @@ void NinjaTtyDaemon::initialize(Application& self)
 
 	ServerApplication::initialize(self);
 
-	AutoPtr<SyslogChannel> pSC= new SyslogChannel( commandName() );
-	logger().setChannel( pSC );
-
-	logger().information("Starting up");
-
 }
 
 void NinjaTtyDaemon::uninitialize()
 {
-	logger().information("Shutting down");
 	ServerApplication::uninitialize();
 }
 
@@ -88,6 +82,12 @@ void NinjaTtyDaemon::defineOptions(OptionSet& options)
 void NinjaTtyDaemon::set_filename(const std::string& name, const std::string& value)
 {
 	ttyFilename = new std::string( value );
+
+	if ( *ttyFilename == "-" || config().getBool("application.runAsDaemon", false) )
+	{
+			AutoPtr<SyslogChannel> pSC= new SyslogChannel( commandName() );
+			logger().setChannel( pSC );
+	}
 }
 
 void NinjaTtyDaemon::set_topic_base(const std::string& name, const std::string& value)
@@ -107,12 +107,15 @@ int NinjaTtyDaemon::main(const std::vector<std::string>& args)
 {
 	if (!_helpRequested)
 	{
+
+		logger().information("Starting up");
 		TaskManager tm;
 		tm.start(new SubTask( *this ) );
 		tm.start(new PubTask( *this ) );
 		waitForTerminationRequest();
 		tm.cancelAll();
 		tm.joinAll();
+		logger().information("Shutting Down");
 	}
 	return Application::EXIT_OK;
 }

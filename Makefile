@@ -1,6 +1,12 @@
+ifdef CROSS_COMPILE
+	SYSROOT=/home/christopher/rpi/tools/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian/bin/../arm-linux-gnueabihf/libc
+	CC=arm-linux-gnueabihf-c++
+	CFLAGS=-c -Wall -I$(SYSROOT)/usr/include -I$(SYSROOT)/usr/local/include
+else
+	CC=/usr/bin/c++
+	CFLAGS=-c -Wall
+endif
 
-CC=c++
-CFLAGS=-c -Wall
 LDFLAGS= -lmosquittopp -lPocoUtil -lPocoFoundation
 OBJ=obj
 BIN=bin
