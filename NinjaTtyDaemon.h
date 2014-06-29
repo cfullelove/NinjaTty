@@ -60,7 +60,8 @@ protected:
 	void set_topic_base(const std::string& name, const std::string& value);
 	void set_host(const std::string& name, const std::string& value);
 	void set_client_name(const std::string& name, const std::string& value);
-
+	void set_debug(const std::string& name, const std::string& value);
+	
 	void displayHelp();
 
 	int main(const std::vector<std::string>& args);

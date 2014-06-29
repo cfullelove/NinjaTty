@@ -8,6 +8,7 @@
 #include <Poco/Format.h>
 #include <Poco/AutoPtr.h>
 #include <Poco/SyslogChannel.h>
+#include <Poco/Logger.h>
 #include "NinjaTtyDaemon.h"
 #include "tasks.h"
 
@@ -84,6 +85,13 @@ void NinjaTtyDaemon::defineOptions(OptionSet& options)
 			.repeatable( false )
 			.argument( "name" )
 			.callback( OptionCallback<NinjaTtyDaemon>(this, &NinjaTtyDaemon::set_client_name ) ) );
+
+	options.addOption(
+		Option( "debug", "d", "turn on debug logging" )
+			.required( false )
+			.repeatable( false )
+			.noArgument()
+			.callback( OptionCallback<NinjaTtyDaemon>( this, &NinjaTtyDaemon::set_debug ) ) );
 }
 
 void NinjaTtyDaemon::set_filename(const std::string& name, const std::string& value)
@@ -113,6 +121,12 @@ void NinjaTtyDaemon::set_client_name(const std::string& name, const std::string&
 	clientName = new std::string( value );
 }
 
+void NinjaTtyDaemon::set_debug(const std::string& name, const std::string& value)
+{
+	logger().debug( "Setting Debug" );
+	Poco::Logger::setLevel( "", 7 );
+}
+
 void NinjaTtyDaemon::displayHelp()
 {
 	HelpFormatter helpFormatter(options());
@@ -128,14 +142,14 @@ int NinjaTtyDaemon::main(const std::vector<std::string>& args)
 		mosq = new MQTTClient( clientName->c_str() );
 		mosq->set_host( *host );
 
-		logger().information("Starting up");
+		logger().debug("Starting up");
 		TaskManager tm;
 		tm.start(new SubTask( *this ) );
 		tm.start(new PubTask( *this ) );
 		waitForTerminationRequest();
 		tm.cancelAll();
 		tm.joinAll();
-		logger().information("Shutting Down");
+		logger().debug("Shutting Down");
 	}
 	return Application::EXIT_OK;
 }

@@ -41,6 +41,8 @@ void PubTask::runTask()
 			mosq->publish( *topicRead, line );
 		}
 	}
+
+	logger.debug( "Finished Publish task" );
 }
 
 void SubTask::runTask()
@@ -56,13 +58,13 @@ void SubTask::runTask()
 
 	if ( *(app.getTtyFilename()) == "-" )
 	{
-		logger.information( "Writing to stdout" );
+		logger.debug( "Writing to stdout" );
 
 		ttyWrite = &std::cout;
 	}
 	else
 	{
-		logger.information( "Writing to : " + (*(app.getTtyFilename())) );
+		logger.debug( "Writing to : " + (*(app.getTtyFilename())) );
 		ttyWrite = new std::ofstream( app.getTtyFilename()->c_str(), std::fstream::out );
 	}
 
@@ -76,35 +78,42 @@ void SubTask::runTask()
 		logger.information( "Connection successful" );
 		while ( ! isCancelled() )
 		{
-			rv = mosq->loop( 1000 );
+			rv = mosq->loop( 0 );
 			if ( rv != MOSQ_ERR_SUCCESS )
 			{
-				logger.information( "Reconnecting... loop() returned: " + Poco::NumberFormatter::formatHex( rv ) );
+				logger.information( "Reconnecting..." );
+				logger.debug( "loop() returned: " + Poco::NumberFormatter::formatHex( rv ) );
 				rv = mosq->reconnect();
 			}
 		}
 
-		logger.information( "Loop finished" );
+		logger.debug( "Loop finished" );
 	}
+	logger.debug( "Finished Subscribe task" );
 
 }
 
 
 void SubTask::handleMessage( const void* pSender, MQTTMessageEventArgs& eventArgs )
 {
+	logger.debug( "handleMessage Start" );
 	char *payload;
     payload = (char *)(eventArgs.message)->payload;
 	(*ttyWrite) << payload << std::endl;
+	logger.debug( "handleMessage End" );
 }
 
 void SubTask::handleConnect( const void* pSender, MQTTConnectEventArgs& eventArgs )
 {
+	logger.debug( "handleConnect Start" );
 	std::string *topicWrite = app.getTopicWrite();
 	logger.information( "Subscribing to: " + *topicWrite );
 	app.getClient()->subscribe( NULL, topicWrite->c_str() );
+	logger.debug( "handleConnect End" );
 }
 
 void SubTask::handleSubscribe( const void* pSender, MQTTSubscribeEventArgs& eventArgs )
 {
-	logger.information( "Subscription Successful" );
+	logger.debug( "handleSubscribe" );
+	logger.debug( "Subscription Successful" );
 }

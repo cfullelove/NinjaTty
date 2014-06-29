@@ -1,6 +1,7 @@
 #include <mosquittopp.h>
 #include <iostream>
 #include <Poco/BasicEvent.h>
+#include <Poco/Mutex.h>
 
 #ifndef NTPS_mqtt_client_included
 #define NTPS_mqtt_client_included
@@ -145,6 +146,7 @@ public:
 	bool connected();
 
 	int publish( std::string topic, std::string message );
+	int loop( int timeout );
 
 	int connect();
 
@@ -165,6 +167,8 @@ public:
 
 private:
     std::string host;
+
+    Poco::Mutex mutex;
 
     bool _connected;
 

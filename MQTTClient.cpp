@@ -1,5 +1,6 @@
 #include <mosquittopp.h>
 #include "MQTTClient.h"
+#include <Poco/Mutex.h>
 
 MQTTClient::MQTTClient( const char* id ) : mosquittopp( id )
 {
@@ -27,15 +28,23 @@ bool MQTTClient::connected()
 
 int MQTTClient::publish( std::string topic, std::string message )
 {
+	Poco::Mutex::ScopedLock lock( mutex );
 	return mosquittopp::publish( NULL, topic.c_str(), message.size(), (uint8_t*) message.c_str(),  0, false );
 }
 
 int MQTTClient::connect()
 {
+	Poco::Mutex::ScopedLock lock( mutex );
 	if ( host == "" )
 		return false;
 
 	return mosquittopp::connect( host.c_str() );
+}
+
+int MQTTClient::loop( int timeout = 1000 )
+{
+	Poco::Mutex::ScopedLock lock( mutex );
+	return mosquittopp::loop( timeout );
 }
 
 void MQTTClient::on_connect( int rc )
