@@ -31,12 +31,15 @@ void PubTask::runTask()
 
 	while ( ! isCancelled() )
 	{
-		std::getline( *ttyRead, line );
+		if ( ttyRead->rdbuf()->in_avail() > 0 )
+		{
+			std::getline( *ttyRead, line );
 
-		if ( line.compare( 0, 37, "{\"DEVICE\":[{\"G\":\"0\",\"V\":0,\"D\":2,\"DA\":" ) == 0)
-			continue;
+			if ( line.compare( 0, 37, "{\"DEVICE\":[{\"G\":\"0\",\"V\":0,\"D\":2,\"DA\":" ) == 0)
+				continue;
 
-		mosq->publish( *topicRead, line );
+			mosq->publish( *topicRead, line );
+		}
 	}
 }
 
