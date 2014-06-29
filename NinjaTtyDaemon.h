@@ -14,18 +14,19 @@ class NinjaTtyDaemon : public ServerApplication
 {
 
 public:
-	NinjaTtyDaemon( const char* _clientId ):
-		_helpRequested( false ),
-		mosq( _clientId ),
-		topicBase( "" )
+	NinjaTtyDaemon( std::string _clientId ):
+		_helpRequested( false ) //,
+//		mosq( _clientId ),
+//		topicBase( "" )
 	{
+		clientName = new std::string( _clientId );
 	}
 
 	~NinjaTtyDaemon()
 	{
 	}
 
-	MQTTClient& getClient()
+	MQTTClient* getClient()
 	{
 		return mosq;
 	}
@@ -37,12 +38,12 @@ public:
 
 	std::string* getTopicRead()
 	{
-		return new std::string( topicBase + "/read" );
+		return new std::string( *topicBase + "/read" );
 	}
 
 	std::string* getTopicWrite()
 	{
-		return new std::string( topicBase + "/write" );
+		return new std::string( *topicBase + "/write" );
 	}
 
 protected:
@@ -57,6 +58,8 @@ protected:
 
 	void set_filename(const std::string& name, const std::string& value);
 	void set_topic_base(const std::string& name, const std::string& value);
+	void set_host(const std::string& name, const std::string& value);
+	void set_client_name(const std::string& name, const std::string& value);
 
 	void displayHelp();
 
@@ -65,11 +68,12 @@ protected:
 private:
 	bool _helpRequested;
 
-	MQTTClient mosq;
-	std::string topicBase;
-
+	MQTTClient *mosq;
+	std::string *topicBase;
 	std::string *ttyFilename;
+	std::string *host;
 
+	std::string *clientName;
 };
 
 #endif

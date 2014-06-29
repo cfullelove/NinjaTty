@@ -62,7 +62,7 @@ void NinjaTtyDaemon::defineOptions(OptionSet& options)
 			.required( true )
 			.repeatable( false )
 			.argument( "host" )
-			.callback( OptionCallback<MQTTClient>(&mosq, &MQTTClient::set_host ) ) );
+			.callback( OptionCallback<NinjaTtyDaemon>(this, &NinjaTtyDaemon::set_host ) ) );
 
 	options.addOption(
 		Option( "topic", "t", "base topic" )
@@ -77,13 +77,20 @@ void NinjaTtyDaemon::defineOptions(OptionSet& options)
 			.repeatable( false )
 			.argument( "file" )
 			.callback( OptionCallback<NinjaTtyDaemon>(this, &NinjaTtyDaemon::set_filename ) ) );
+
+	options.addOption(
+		Option( "name", "n", "client name" )
+			.required( false )
+			.repeatable( false )
+			.argument( "name" )
+			.callback( OptionCallback<NinjaTtyDaemon>(this, &NinjaTtyDaemon::set_client_name ) ) );
 }
 
 void NinjaTtyDaemon::set_filename(const std::string& name, const std::string& value)
 {
 	ttyFilename = new std::string( value );
 
-	if ( *ttyFilename == "-" || config().getBool("application.runAsDaemon", false) )
+	if ( value == "-" || config().getBool("application.runAsDaemon", false) )
 	{
 			AutoPtr<SyslogChannel> pSC= new SyslogChannel( commandName() );
 			logger().setChannel( pSC );
@@ -92,7 +99,18 @@ void NinjaTtyDaemon::set_filename(const std::string& name, const std::string& va
 
 void NinjaTtyDaemon::set_topic_base(const std::string& name, const std::string& value)
 {
-	topicBase = std::string( value );
+	topicBase = new std::string( value );
+}
+
+void NinjaTtyDaemon::set_host(const std::string& name, const std::string& value)
+{
+	host = new std::string( value );
+}
+
+void NinjaTtyDaemon::set_client_name(const std::string& name, const std::string& value)
+{
+	delete clientName;
+	clientName = new std::string( value );
 }
 
 void NinjaTtyDaemon::displayHelp()
@@ -107,6 +125,8 @@ int NinjaTtyDaemon::main(const std::vector<std::string>& args)
 {
 	if (!_helpRequested)
 	{
+		mosq = new MQTTClient( clientName->c_str() );
+		mosq->set_host( *host );
 
 		logger().information("Starting up");
 		TaskManager tm;

@@ -3,6 +3,7 @@
 
 MQTTClient::MQTTClient( const char* id ) : mosquittopp( id )
 {
+	host = std::string( "" );
 };
 
 MQTTClient::~MQTTClient()
@@ -31,6 +32,9 @@ int MQTTClient::publish( std::string topic, std::string message )
 
 int MQTTClient::connect()
 {
+	if ( host == "" )
+		return false;
+
 	return mosquittopp::connect( host.c_str() );
 }
 

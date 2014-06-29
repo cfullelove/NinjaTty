@@ -5,7 +5,7 @@
 
 int main(int argc, char** argv)
 {
-	std::string clientId( "ninjatty_" + Poco::Process::id() );
-    NinjaTtyDaemon app( clientId.c_str() );
+	std::string clientId( "ninjatty" );
+	NinjaTtyDaemon app( clientId );
 	return app.run(argc, argv);
 }
